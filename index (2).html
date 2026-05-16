@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAGTOR - Magnet Detector Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #38bdf8;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --neutral-color: #64748b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 450px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            padding: 35px 30px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            border: 1px solid #334155;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 26px;
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(to right, #38bdf8, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-connect {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            padding: 15px 28px;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 14px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.35);
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-connect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.45);
+        }
+
+        .btn-connected {
+            background: #475569 !important;
+            box-shadow: none !important;
+            cursor: default;
+            transform: none !important;
+        }
+
+        .status-container {
+            margin-top: 35px;
+        }
+
+        .detector-ring {
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            border: 6px solid var(--neutral-color);
+            margin: 0 auto 25px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .detector-icon {
+            font-size: 54px;
+            transition: all 0.3s ease;
+        }
+
+        .status-text {
+            font-size: 19px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--neutral-color);
+            transition: color 0.3s ease;
+        }
+
+        /* State management styles */
+        .state-disconnected .detector-ring { border-color: #334155; }
+        .state-disconnected .status-text { color: #64748b; }
+
+        .state-waiting .detector-ring { 
+            border-color: var(--accent-color); 
+            animation: pulse-wait 2s infinite;
+        }
+        .state-waiting .status-text { color: var(--accent-color); }
+        .state-waiting .detector-icon { animation: float 3s ease-in-out infinite; }
+
+        .state-detected .detector-ring { 
+            border-color: var(--danger-color); 
+            background: rgba(239, 68, 68, 0.15);
+            transform: scale(1.06);
+            box-shadow: 0 0 35px rgba(239, 68, 68, 0.45);
+        }
+        .state-detected .status-text { color: var(--danger-color); }
+        .state-detected .detector-icon { transform: scale(1.25); }
+
+        @keyframes pulse-wait {
+            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(56, 189, 248, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .terminal {
+            margin-top: 30px;
+            background-color: #090d16;
+            border-radius: 12px;
+            padding: 12px 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            text-align: left;
+            color: #34d399;
+            max-height: 55px;
+            overflow-y: auto;
+            border: 1px solid #1e293b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div id="mainCard" class="card state-disconnected">
+        <h1>PROJECT MAGTOR</h1>
+        <div class="subtitle">Magnet Detector System</div>
+        
+        <button id="connectBtn" class="btn-connect" onclick="connectBLE()">HUBUNGKAN VIA BLUETOOTH</button>
+        
+        <div class="status-container">
+            <div class="detector-ring">
+                <div id="detectorIcon" class="detector-icon">📡</div>
+            </div>
+            <div id="statusText" class="status-text">Perangkat Terputus</div>
+        </div>
+
+        <div id="terminalLog" class="terminal">> Siap menghubungkan...</div>
+    </div>
+</div>
+
+<script>
+// Sinkronisasi UUID dengan ESP32
+const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+const CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+
+const mainCard = document.getElementById('mainCard');
+const connectBtn = document.getElementById('connectBtn');
+const statusText = document.getElementById('statusText');
+const detectorIcon = document.getElementById('detectorIcon');
+const terminalLog = document.getElementById('terminalLog');
+
+function logToTerminal(message) {
+    terminalLog.innerText = "> " + message;
+    console.log(message);
+}
+
+async function connectBLE() {
+    try {
+        logToTerminal('Mencari perangkat MAGTOR...');
+        // Melakukan filter pencarian spesifik nama perangkat 'MAGTOR'
+        const device = await navigator.bluetooth.requestDevice({
+            filters: [{ name: 'MAGTOR' }],
+            optionalServices: [SERVICE_UUID]
+        });
+
+        logToTerminal('Menghubungkan ke GATT Server...');
+        const server = await device.gatt.connect();
+
+        logToTerminal('Mengakses Service...');
+        const service = await server.getPrimaryService(SERVICE_UUID);
+
+        logToTerminal('Mengambil Karakteristik...');
+        const characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+
+        await characteristic.startNotifications();
+        
+        // Mengubah Tampilan Tombol
+        connectBtn.innerText = "MAGTOR TERKONEKSI ✔";
+        connectBtn.classList.add('btn-connected');
+        connectBtn.disabled = true;
+        
+        // Mengubah Status Dashboard
+        mainCard.className = "card state-waiting";
+        statusText.innerText = "Menunggu Magnet...";
+        detectorIcon.innerText = "⭕";
+        logToTerminal('Sukses terhubung! Menunggu data sensor...');
+        
+        characteristic.addEventListener('characteristicvaluechanged', handleDataChange);
+        
+        // Deteksi Otomatis Jika Koneksi Terputus di Sisi Web
+        device.addEventListener('gattserverdisconnected', () => {
+            connectBtn.innerText = "HUBUNGKAN VIA BLUETOOTH";
+            connectBtn.classList.remove('btn-connected');
+            connectBtn.disabled = false;
+            
+            mainCard.className = "card state-disconnected";
+            statusText.innerText = "Perangkat Terputus";
+            detectorIcon.innerText = "📡";
+            logToTerminal('Koneksi dengan MAGTOR terputus.');
+        });
+
+    } catch (error) {
+        logToTerminal('Eror: ' + error);
+        alert('Gagal terhubung ke BLE: ' + error);
+    }
+}
+
+function handleDataChange(event) {
+    const value = new TextDecoder().decode(event.target.value);
+    
+    if (value === "SELATAN") {
+        mainCard.className = "card state-detected";
+        statusText.innerText = "Kutub Selatan Terdeteksi!";
+        detectorIcon.innerText = "🧲";
+        logToTerminal('Data: KUTUB SELATAN');
+    } else {
+        mainCard.className = "card state-waiting";
+        statusText.innerText = "Menunggu Magnet...";
+        detectorIcon.innerText = "⭕";
+        logToTerminal('Data: NETRAL / UTARA');
+    }
+}
+</script>
+</body>
+</html>
