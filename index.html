@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAGTOR - Magnet Detector Dashboard</title>
+    <title>MAGTOR - Gauss Meter Pro (Dual-Scale)</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
+            --bg-color: #0b0f19;
+            --card-bg: #151f32;
             --text-color: #f8fafc;
             --accent-color: #38bdf8;
-            --success-color: #10b981;
-            --danger-color: #ef4444;
+            --north-color: #06b6d4;
+            --south-color: #ef4444;
             --neutral-color: #64748b;
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
@@ -31,153 +31,144 @@
             width: 100%;
             max-width: 450px;
             margin: auto;
-            padding: 20px;
+            padding: 15px;
         }
 
         .card {
             background-color: var(--card-bg);
-            border-radius: 24px;
-            padding: 35px 30px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-            border: 1px solid #334155;
+            border-radius: 28px;
+            padding: 30px 25px;
+            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6);
+            border: 1px solid #22314d;
             text-align: center;
-            transition: all 0.3s ease;
         }
 
         h1 {
             font-size: 26px;
-            margin-top: 0;
-            margin-bottom: 5px;
+            margin: 0 0 5px 0;
             font-weight: 800;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             background: linear-gradient(to right, #38bdf8, #3b82f6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .subtitle {
-            color: #94a3b8;
-            font-size: 13px;
-            margin-bottom: 30px;
+            color: #64748b;
+            font-size: 11px;
+            margin-bottom: 25px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
 
         .btn-connect {
             background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
             color: white;
             border: none;
-            padding: 15px 28px;
-            font-size: 15px;
+            padding: 15px 20px;
+            font-size: 14px;
             font-weight: 700;
-            border-radius: 14px;
+            border-radius: 16px;
             cursor: pointer;
             width: 100%;
-            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.35);
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
             transition: all 0.3s ease;
-            letter-spacing: 0.5px;
-            user-select: none;
-        }
-
-        .btn-connect:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.45);
         }
 
         .btn-connected {
-            background: #475569 !important;
+            background: #273549 !important;
             box-shadow: none !important;
             cursor: default;
-            transform: none !important;
+            color: #94a3b8;
         }
 
-        .status-container {
-            margin-top: 35px;
-        }
-
-        .detector-ring {
-            width: 170px;
-            height: 170px;
-            border-radius: 50%;
-            border: 6px solid var(--neutral-color);
-            margin: 0 auto 25px auto;
+        .gauge-section {
+            margin: 25px auto 15px auto;
+            position: relative;
+            width: 200px;
+            height: 200px;
             display: flex;
-            align-items: center;
             justify-content: center;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background: rgba(15, 23, 42, 0.5);
+            align-items: center;
         }
 
-        .detector-icon {
-            font-size: 54px;
+        .progress-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.1s ease, stroke 0.3s ease;
+            stroke-dasharray: 565.48;
+            stroke-dashoffset: 565.48;
+        }
+
+        .value-display { z-index: 2; }
+
+        .gauss-number {
+            font-size: 48px;
             font-weight: 900;
-            transition: all 0.3s ease;
-        }
-
-        .status-text {
-            font-size: 19px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-family: monospace;
+            line-height: 1;
             color: var(--neutral-color);
-            transition: color 0.3s ease;
         }
 
-        /* --- STATE MANAGEMENT STYLES --- */
-        .state-disconnected .detector-ring { border-color: #334155; }
-        .state-disconnected .status-text { color: #64748b; }
-
-        .state-waiting .detector-ring { 
-            border-color: var(--accent-color); 
-            animation: pulse-wait 2s infinite;
-        }
-        .state-waiting .status-text { color: var(--accent-color); }
-        .state-waiting .detector-icon { animation: float 3s ease-in-out infinite; }
-
-        /* Mode Kutub Utara (U) - Biru */
-        .state-north .detector-ring { 
-            border-color: #06b6d4; 
-            background: rgba(6, 182, 212, 0.15);
-            transform: scale(1.06);
-            box-shadow: 0 0 35px rgba(6, 182, 212, 0.45);
-        }
-        .state-north .status-text { color: #06b6d4; }
-        .state-north .detector-icon { color: #06b6d4; font-size: 72px; }
-
-        /* Mode Kutub Selatan (S) - Merah */
-        .state-south .detector-ring { 
-            border-color: var(--danger-color); 
-            background: rgba(239, 68, 68, 0.15);
-            transform: scale(1.06);
-            box-shadow: 0 0 35px rgba(239, 68, 68, 0.45);
-        }
-        .state-south .status-text { color: var(--danger-color); }
-        .state-south .detector-icon { color: var(--danger-color); font-size: 72px; }
-
-        @keyframes pulse-wait {
-            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(56, 189, 248, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        .unit {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            letter-spacing: 1px;
+            margin-top: 5px;
         }
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
-            100% { transform: translateY(0px); }
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
         }
+
+        .data-box {
+            background: #0f172a;
+            border-radius: 14px;
+            padding: 12px;
+            border: 1px solid #1e293b;
+        }
+
+        .data-box.full-width { grid-column: span 2; }
+
+        .data-label {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .data-value {
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .state-disconnected .gauss-number { color: #475569; }
+        .state-waiting .gauss-number { color: var(--accent-color); }
+        .state-north .gauss-number { color: var(--north-color); }
+        .state-south .gauss-number { color: var(--south-color); }
 
         .terminal {
-            margin-top: 30px;
-            background-color: #090d16;
+            margin-top: 20px;
+            background-color: #060913;
             border-radius: 12px;
-            padding: 12px 15px;
-            font-family: 'Courier New', Courier, monospace;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
             font-size: 11px;
             text-align: left;
-            color: #34d399;
-            max-height: 55px;
+            color: #10b981;
+            max-height: 45px;
             overflow-y: auto;
-            border: 1px solid #1e293b;
+            border: 1px solid #162238;
         }
     </style>
 </head>
@@ -186,18 +177,37 @@
 <div class="dashboard">
     <div id="mainCard" class="card state-disconnected">
         <h1>PROJECT MAGTOR</h1>
-        <div class="subtitle">Magnet Detector System</div>
+        <div class="subtitle">Dual Peak & Balanced Gauss Meter (Pro)</div>
         
         <button id="connectBtn" class="btn-connect">HUBUNGKAN VIA BLUETOOTH</button>
         
-        <div class="status-container">
-            <div class="detector-ring">
-                <div id="detectorIcon" class="detector-icon">📡</div>
+        <div class="gauge-section">
+            <svg class="progress-ring" width="200" height="200">
+                <circle stroke="#1e293b" stroke-width="10" fill="transparent" r="90" cx="100" cy="100"/>
+                <circle id="gaugeBar" class="progress-ring__circle" stroke="#64748b" stroke-width="10" stroke-linecap="round" fill="transparent" r="90" cx="100" cy="100"/>
+            </svg>
+            <div class="value-display">
+                <div id="gaussVal" class="gauss-number">0</div>
+                <div class="unit">GAUSS</div>
             </div>
-            <div id="statusText" class="status-text">Perangkat Terputus</div>
         </div>
 
-        <div id="terminalLog" class="terminal">> Siap menghubungkan...</div>
+        <div class="data-grid">
+            <div class="data-box full-width">
+                <div class="data-label">Kutub Magnet Aktif</div>
+                <div id="poleVal" class="data-value" style="font-size: 18px; font-weight:900;">-</div>
+            </div>
+            <div class="data-box" style="border-left: 3px solid var(--north-color);">
+                <div class="data-label">Puncak Max Utara</div>
+                <div id="peakNorthVal" class="data-value" style="color: var(--north-color); font-family: monospace;">0 G</div>
+            </div>
+            <div class="data-box" style="border-left: 3px solid var(--south-color);">
+                <div class="data-label">Puncak Max Selatan</div>
+                <div id="peakSouthVal" class="data-value" style="color: var(--south-color); font-family: monospace;">0 G</div>
+            </div>
+        </div>
+
+        <div id="terminalLog" class="terminal">> Standby. Nyalakan ESP32...</div>
     </div>
 </div>
 
@@ -207,82 +217,122 @@ const CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
 
 const mainCard = document.getElementById('mainCard');
 const connectBtn = document.getElementById('connectBtn');
-const statusText = document.getElementById('statusText');
-const detectorIcon = document.getElementById('detectorIcon');
+const gaussVal = document.getElementById('gaussVal');
+const poleVal = document.getElementById('poleVal');
+const peakNorthVal = document.getElementById('peakNorthVal');
+const peakSouthVal = document.getElementById('peakSouthVal');
+const gaugeBar = document.getElementById('gaugeBar');
 const terminalLog = document.getElementById('terminalLog');
+
+const circumference = 2 * Math.PI * 90;
+gaugeBar.style.strokeDasharray = `${circumference} ${circumference}`;
+gaugeBar.style.strokeDashoffset = circumference;
+
+let heartbeatTimer = null;
+let bluetoothDevice = null;
+let lastReceivedTime = 0;
 
 function logToTerminal(message) {
     terminalLog.innerText = "> " + message;
-    console.log(message);
 }
 
-// Perbaikan pemicu klik: Menggunakan Event Listener murni agar lolos sensor keamanan Chrome
+function setGauge(value) {
+    const maxExpectedGauss = 1200; 
+    const absValue = Math.min(Math.abs(value), maxExpectedGauss);
+    gaugeBar.style.strokeDashoffset = circumference - ((absValue / maxExpectedGauss) * circumference);
+}
+
+function resetUItoDisconnected() {
+    connectBtn.innerText = "HUBUNGKAN VIA BLUETOOTH";
+    connectBtn.classList.remove('btn-connected');
+    connectBtn.disabled = false;
+    
+    mainCard.className = "card state-disconnected";
+    gaussVal.innerText = "0";
+    poleVal.innerText = "-";
+    gaugeBar.style.strokeDashoffset = circumference;
+    
+    logToTerminal('Koneksi terputus/ESP mati. Klik hubungkan lagi.');
+    if (heartbeatTimer) clearInterval(heartbeatTimer);
+}
+
 connectBtn.addEventListener('click', async function() {
     if (connectBtn.disabled) return;
-    
     try {
-        logToTerminal('Mencari perangkat MAGTOR...');
+        logToTerminal('Mencari perangkat...');
         const device = await navigator.bluetooth.requestDevice({
-            filters: [{ name: 'MAGTOR' }],
+            filters: [{ name: 'MAGTOR_GAUSS' }],
             optionalServices: [SERVICE_UUID]
         });
 
-        logToTerminal('Menghubungkan ke GATT Server...');
+        bluetoothDevice = device;
+        logToTerminal('Menghubungkan ke ESP32...');
         const server = await device.gatt.connect();
 
-        logToTerminal('Mengakses Service...');
-        const service = await server.getPrimaryService(SERVICE_UUID);
+        device.addEventListener('gattserverdisconnected', resetUItoDisconnected);
 
-        logToTerminal('Mengambil Karakteristik...');
+        const service = await server.getPrimaryService(SERVICE_UUID);
         const characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
 
         await characteristic.startNotifications();
         
-        connectBtn.innerText = "MAGTOR TERKONEKSI ✔";
+        connectBtn.innerText = "ONLINE ✔";
         connectBtn.classList.add('btn-connected');
         connectBtn.disabled = true;
-        
         mainCard.className = "card state-waiting";
-        statusText.innerText = "Menunggu Magnet...";
-        detectorIcon.innerText = "⭕";
-        logToTerminal('Sukses terhubung! Menunggu data sensor...');
+        poleVal.innerText = "READY / NETRAL";
+        logToTerminal('Terhubung! Menampilkan data objektif...');
         
+        lastReceivedTime = Date.now();
         characteristic.addEventListener('characteristicvaluechanged', handleDataChange);
-        
-        device.addEventListener('gattserverdisconnected', () => {
-            connectBtn.innerText = "HUBUNGKAN VIA BLUETOOTH";
-            connectBtn.classList.remove('btn-connected');
-            connectBtn.disabled = false;
-            
-            mainCard.className = "card state-disconnected";
-            statusText.innerText = "Perangkat Terputus";
-            detectorIcon.innerText = "📡";
-            logToTerminal('Koneksi dengan MAGTOR terputus.');
-        });
 
+        if (heartbeatTimer) clearInterval(heartbeatTimer);
+        heartbeatTimer = setInterval(() => {
+            if (Date.now() - lastReceivedTime > 500) { 
+                if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+                    bluetoothDevice.gatt.disconnect();
+                } else {
+                    resetUItoDisconnected();
+                }
+            }
+        }, 300);
+        
     } catch (error) {
-        logToTerminal('Eror: ' + error);
+        logToTerminal('Gagal Hubungkan: ' + error);
+        resetUItoDisconnected();
     }
 });
 
 function handleDataChange(event) {
-    const value = new TextDecoder().decode(event.target.value);
+    lastReceivedTime = Date.now();
+    const rawString = new TextDecoder().decode(event.target.value);
     
-    if (value === "SELATAN") {
+    const dataParts = rawString.split('|');
+    if (dataParts.length < 4) return;
+
+    const gaussValue = parseFloat(dataParts[0]);
+    const peakUtaraValue = dataParts[1];
+    const peakSelatanValue = dataParts[2];
+
+    // MENAMPILKAN DATA REAL MURNI APA ADANYA TANPA FORCED-MIRRORING
+    gaussVal.innerText = Math.abs(Math.round(gaussValue));
+    setGauge(gaussValue);
+
+    peakNorthVal.innerText = peakUtaraValue + ".00 G";
+    peakSouthVal.innerText = peakSelatanValue + ".00 G";
+
+    if (gaussValue > 15.0) {
         mainCard.className = "card state-south";
-        statusText.innerText = "Kutub Selatan Terdeteksi";
-        detectorIcon.innerText = "S";
-        logToTerminal('Data: KUTUB SELATAN (S)');
-    } else if (value === "UTARA") {
+        poleVal.innerText = "KUTUB SELATAN (S)";
+        gaugeBar.style.stroke = "var(--south-color)";
+    } else if (gaussValue < -15.0) {
         mainCard.className = "card state-north";
-        statusText.innerText = "Kutub Utara Terdeteksi";
-        detectorIcon.innerText = "U";
-        logToTerminal('Data: KUTUB UTARA (U)');
+        poleVal.innerText = "KUTUB UTARA (U)";
+        gaugeBar.style.stroke = "var(--north-color)";
     } else {
         mainCard.className = "card state-waiting";
-        statusText.innerText = "Menunggu Magnet...";
-        detectorIcon.innerText = "⭕";
-        logToTerminal('Data: STANDBY / NETRAL');
+        poleVal.innerText = "READY / NETRAL";
+        gaugeBar.style.stroke = "var(--accent-color)";
     }
 }
 </script>
